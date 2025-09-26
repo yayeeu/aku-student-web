@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { apiService } from '@/services/api';
 import akuLogo from '@/assets/aku-education-logo.png';
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (userData: any) => void;
   onSwitchToSignup: () => void;
 }
 
@@ -18,16 +19,37 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignup 
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
     
-    // Simulate login API call
-    setTimeout(() => {
+    try {
+      // Use real API login
+      const authResponse = await apiService.login({ email, password });
+      
+      // Store session data in localStorage
+      const sessionData = {
+        timestamp: Date.now(),
+        user: {
+          id: authResponse.user.id,
+          email: authResponse.user.email,
+          created_at: authResponse.user.created_at
+        },
+        session: authResponse.session
+      };
+      localStorage.setItem('userSession', JSON.stringify(sessionData));
+      
+      // Call onLogin with user data
+      onLogin(authResponse.user);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+    } finally {
       setIsLoading(false);
-      onLogin();
-    }, 1000);
+    }
   };
 
   return (
@@ -116,6 +138,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignup 
                   Forgot password?
                 </a>
               </div>
+
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                  {error}
+                </div>
+              )}
 
               <Button
                 type="submit"

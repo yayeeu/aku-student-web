@@ -1,49 +1,112 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { StudentData } from '@/types';
+import { apiService, StudentApiResponse } from '@/services/api';
+import { SessionManager } from '@/utils/sessionManager';
 
-// Mock student data - in a real app this would come from an API
-const MOCK_STUDENT_DATA: StudentData = {
-  firstName: "Alex",
-  lastName: "Johnson",
-  grade: "8th Grade",
-  city: "Vancouver",
-  region: "BC",
-  school: "Maple Leaf Secondary",
-  hasConsent: true
+// Helper function to map API response to StudentData interface
+const mapApiResponseToStudentData = (apiData: StudentApiResponse): StudentData => {
+  return {
+    firstName: apiData.first_name || '',
+    lastName: apiData.last_name || '',
+    grade: apiData.grade_level || '',
+    student_competency_level_theta: apiData.student_competency_level_theta || 0,
+    has_taken_onboarding_assessment: apiData.has_taken_onboarding_assessment || false,
+    //city: apiData.city || '',
+    //region: apiData.region || '',
+    //school: apiData.school || '',
+    //hasConsent: apiData.has_consent || false
+  };
 };
 
-export const useStudentData = () => {
-  const [studentData, setStudentData] = useState<StudentData>(MOCK_STUDENT_DATA);
-  const [isLoading, setIsLoading] = useState(false);
+// Helper function to map StudentData updates to API format
+const mapStudentDataToApiFormat = (studentData: Partial<StudentData>): Partial<StudentApiResponse> => {
+  return {
+    first_name: studentData.firstName,
+    last_name: studentData.lastName,
+    grade_level: studentData.grade,
+    student_competency_level_theta: studentData.student_competency_level_theta,
+    has_taken_onboarding_assessment: studentData.has_taken_onboarding_assessment,
+    // city: studentData.city,
+    // region: studentData.region,
+    // school: studentData.school,
+    // has_consent: studentData.hasConsent
+  };
+};
 
-  const updateStudentData = useCallback(async (updates: Partial<StudentData>) => {
+export const useStudentData = (userId?: string) => {
+  const [studentData, setStudentData] = useState<StudentData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Get user ID from session if not provided
+  const effectiveUserId = userId || SessionManager.getCurrentUserId();
+
+  const fetchStudentData = useCallback(async (studentId: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setStudentData(prev => ({ ...prev, ...updates }));
-    } catch (error) {
-      console.error('Failed to update student data:', error);
+      const apiData = await apiService.getStudentData(studentId);
+      const mappedData = mapApiResponseToStudentData(apiData);
+      setStudentData(mappedData);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch student data';
+      setError(errorMessage);
+      console.error('Failed to fetch student data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const updateStudentData = useCallback(async (updates: Partial<StudentData>, studentId?: string) => {
+    if (!studentId) {
+      console.error('Student ID is required for updating student data');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const apiUpdates = mapStudentDataToApiFormat(updates);
+      const updatedApiData = await apiService.updateStudentData(studentId, apiUpdates);
+      const updatedData = mapApiResponseToStudentData(updatedApiData);
+      setStudentData(updatedData);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update student data';
+      setError(errorMessage);
+      console.error('Failed to update student data:', err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const getFullName = useCallback(() => {
+    if (!studentData) return '';
     return `${studentData.firstName} ${studentData.lastName}`;
-  }, [studentData.firstName, studentData.lastName]);
+  }, [studentData]);
 
   const getInitials = useCallback(() => {
-    return `${studentData.firstName[0]}${studentData.lastName[0]}`;
-  }, [studentData.firstName, studentData.lastName]);
+    if (!studentData) return '';
+    return `${studentData.firstName[0] || ''}${studentData.lastName[0] || ''}`;
+  }, [studentData]);
 
   const getLocation = useCallback(() => {
-    return `${studentData.city}, ${studentData.region}`;
-  }, [studentData.city, studentData.region]);
+    if (!studentData) return '';
+    // return `${studentData.city}, ${studentData.region}`;
+    return ''; // Location fields are currently disabled
+  }, [studentData]);
+
+  // Auto-fetch data when userId is provided or available from session
+  useEffect(() => {
+    if (effectiveUserId) {
+      fetchStudentData(effectiveUserId);
+    }
+  }, [effectiveUserId, fetchStudentData]);
 
   return {
     studentData,
     isLoading,
+    error,
+    fetchStudentData,
     updateStudentData,
     getFullName,
     getInitials,

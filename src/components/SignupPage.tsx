@@ -11,7 +11,7 @@ import appLogo from '@/assets/app-logo.png';
 import { apiService } from '@/services/api';
 
 interface SignupPageProps {
-  onSignup: () => void;
+  onSignup: (userData: any) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -67,16 +67,14 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onSignup, onSwitchToLogi
         user: {
           id: authResponse.user.id,
           email: authResponse.user.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          hasConsent: true
+          created_at: authResponse.user.created_at
         },
         session: authResponse.session
       };
       localStorage.setItem('userSession', JSON.stringify(sessionData));
 
-      // Success - call parent callback
-      onSignup();
+      // Success - call parent callback with user data
+      onSignup(authResponse.user);
     } catch (error) {
       console.error('Signup error:', error);
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');

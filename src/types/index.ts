@@ -4,10 +4,12 @@ export interface StudentData {
   firstName: string;
   lastName: string;
   grade: string;
-  city: string;
-  region: string;
-  school: string;
-  hasConsent?: boolean;
+  student_competency_level_theta: number;
+  has_taken_onboarding_assessment: boolean;
+  // city: string;
+  // region: string;
+  // school: string;
+  // hasConsent?: boolean;
 }
 
 export interface Subject {

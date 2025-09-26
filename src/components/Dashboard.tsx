@@ -6,16 +6,10 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart3, BookOpen, Clock, Star, TrendingUp, Trophy, Target, Brain, Award, Calendar, Users, Activity, Zap, PieChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
-interface StudentData {
-  firstName: string;
-  lastName: string;
-  grade: string;
-  city: string;
-  region: string;
-  school: string;
-}
+import { useStudentData } from '@/hooks/useStudentData';
+
 interface DashboardProps {
-  studentData: StudentData;
+  userId?: string;
 }
 const sidebarNavigation = [{
   title: 'My Progress',
@@ -98,9 +92,40 @@ const masteryDistribution = [{
   color: 'bg-orange-500'
 }];
 export const Dashboard: React.FC<DashboardProps> = ({
-  studentData
+  userId
 }) => {
   const [selectedCourse, setSelectedCourse] = useState('all');
+  const { studentData, isLoading, error } = useStudentData(userId);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-soft-surface flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !studentData) {
+    return (
+      <div className="min-h-screen bg-soft-surface flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h3 className="text-lg font-semibold text-foreground mb-2">Unable to load dashboard</h3>
+          <p className="text-muted-foreground mb-4">{error || 'No data available'}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
   return <div className="min-h-screen bg-soft-surface">
       <div className="flex">
         {/* Sidebar */}

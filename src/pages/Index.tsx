@@ -11,14 +11,18 @@ import { PracticePage } from '@/components/PracticePage';
 import { MyLearning } from '@/components/MyLearning';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 
-interface StudentData {
-  firstName: string;
-  lastName: string;
-  grade: string;
-  city: string;
-  region: string;
-  school: string;
-  hasConsent: boolean;
+interface SessionData {
+  timestamp: number;
+  user: {
+    id: string;
+    email: string;
+    created_at: string;
+  };
+  session: {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+  };
 }
 
 type AppState = 'login' | 'signup' | 'authenticated';
@@ -32,41 +36,24 @@ const Index = () => {
   });
   const [isTutorVisible, setIsTutorVisible] = useState(true);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
-  
-  // Create mock student data for demonstration
-  const [studentData] = useState<StudentData>({
-    firstName: 'Amanuel',
-    lastName: 'Tadesse',
-    grade: '10',
-    city: 'Addis Ababa',
-    region: 'Addis Ababa',
-    school: 'International Community School',
-    hasConsent: true
-  });
+  const [currentUser, setCurrentUser] = useState<SessionData['user'] | null>(null);
 
-  const handleLogin = () => {
-    // Create a temporary session
-    const sessionData = {
-      timestamp: Date.now(),
-      user: studentData
-    };
-    localStorage.setItem('userSession', JSON.stringify(sessionData));
+  const handleLogin = (userData: SessionData['user']) => {
+    // Session data is already stored in LoginPage, just update state
+    setCurrentUser(userData);
     setAppState('authenticated');
   };
 
-  const handleSignup = () => {
-    // Create a temporary session
-    const sessionData = {
-      timestamp: Date.now(),
-      user: studentData
-    };
-    localStorage.setItem('userSession', JSON.stringify(sessionData));
+  const handleSignup = (userData: SessionData['user']) => {
+    // Session data is already stored in SignupPage, just update state
+    setCurrentUser(userData);
     setAppState('authenticated');
   };
 
   const handleLogout = () => {
     // Clear the session
     localStorage.removeItem('userSession');
+    setCurrentUser(null);
     setAppState('login');
   };
 
@@ -75,12 +62,12 @@ const Index = () => {
     const storedSession = localStorage.getItem('userSession');
     if (storedSession && appState !== 'authenticated') {
       try {
-        const sessionData = JSON.parse(storedSession);
-        // Check if session is less than 24 hours old
-        const sessionAge = Date.now() - sessionData.timestamp;
-        const twentyFourHours = 24 * 60 * 60 * 1000;
+        const sessionData: SessionData = JSON.parse(storedSession);
         
-        if (sessionAge < twentyFourHours) {
+        // Check if session token is still valid (not expired)
+        const currentTime = Date.now() / 1000; // Convert to seconds
+        if (sessionData.session.expires_at > currentTime) {
+          setCurrentUser(sessionData.user);
           setAppState('authenticated');
         } else {
           // Session expired
@@ -92,8 +79,19 @@ const Index = () => {
         localStorage.removeItem('userSession');
         setAppState('login');
       }
+    } else if (storedSession && appState === 'authenticated' && !currentUser) {
+      // Load user data if authenticated but currentUser is null
+      try {
+        const sessionData: SessionData = JSON.parse(storedSession);
+        setCurrentUser(sessionData.user);
+      } catch (error) {
+        // Invalid session data
+        localStorage.removeItem('userSession');
+        setCurrentUser(null);
+        setAppState('login');
+      }
     }
-  }, [location.pathname, appState]);
+  }, [location.pathname, appState, currentUser]);
 
   // Handle routing based on authentication state
   if (appState === 'login') {
@@ -126,7 +124,7 @@ const Index = () => {
       <Routes>
         <Route path="/" element={
           <HomePage 
-            studentData={studentData}
+            userId={currentUser?.id}
             isAvatarVisible={isTutorVisible}
             onToggleAvatarVisibility={() => setIsTutorVisible(!isTutorVisible)}
             isAvatarMuted={!isVoiceEnabled}
@@ -138,14 +136,14 @@ const Index = () => {
             const searchParams = new URLSearchParams(window.location.search);
             const subject = searchParams.get('subject');
             return subject ? 
-              <SubjectDetail studentData={studentData} /> : 
-              <MyCourses studentData={studentData} />;
+              <SubjectDetail userId={currentUser?.id} /> : 
+              <MyCourses userId={currentUser?.id} />;
           })()
         } />
         <Route path="/lessons" element={<LessonsPage />} />
         <Route path="/practice" element={<PracticePage />} />
-        <Route path="/dashboard" element={<Dashboard studentData={studentData} />} />
-        <Route path="/progress/learning" element={<MyLearning studentData={studentData} />} />
+        <Route path="/dashboard" element={<Dashboard userId={currentUser?.id} />} />
+        <Route path="/progress/learning" element={<MyLearning userId={currentUser?.id} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthenticatedLayout>

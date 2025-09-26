@@ -5,12 +5,14 @@ import { Trophy, Target, Star } from 'lucide-react';
 
 interface WelcomeBannerProps {
   firstName: string;
+  level: number;
   initials: string;
   avatarSrc?: string;
 }
 
 export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({ 
   firstName, 
+  level,
   initials, 
   avatarSrc 
 }) => {
@@ -33,7 +35,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
                 <div className="flex items-center gap-4 text-white/90">
                   <div className="flex items-center gap-1">
                     <Trophy className="w-4 h-4" />
-                    <span>Level 5</span>
+                    <span>Level {level}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4" />
