@@ -1,0 +1,23 @@
+services:
+  akuapp:
+    container_name: student
+    build:
+      context: .
+    restart: unless-stopped
+    # You don't need to publish the port to the host when using NPM
+    # ports:
+    #  - "8080:8080"
+    environment:
+      - VITE_AKU_API_URL=http://api.localhost
+      # Ensure your dev server binds to all interfaces (adjust to your app)
+      - HOST=0.0.0.0
+      - PORT=8080
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    networks:
+      - supabase_default
+
+networks:
+  supabase_default:
+    external: true
