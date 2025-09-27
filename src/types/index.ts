@@ -28,6 +28,22 @@ export interface Subject {
   topics?: Topic[];
 }
 
+export interface Course {
+  id: string;
+  name: string;
+  description?: string;
+  grade_level: string;
+  subject_area?: string;
+  is_available: boolean;
+  course_competency_level_theta: number;
+  competency_percentage: number;
+  icon?: React.ComponentType<any>;
+  color?: string;
+  href?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Topic {
   id: string;
   name: string;

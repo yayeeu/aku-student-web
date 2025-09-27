@@ -40,33 +40,5 @@ export const PROGRESS_ITEMS: NavigationItem[] = [
   }
 ];
 
-export const SUBJECTS: SubjectItem[] = [
-  {
-    name: 'Mathematics',
-    href: '/courses?subject=mathematics',
-    icon: Calculator,
-    competencyLevel: 85,
-    color: 'text-blue-500'
-  },
-  {
-    name: 'Physics',
-    href: '/courses?subject=physics',
-    icon: Atom,
-    competencyLevel: 72,
-    color: 'text-purple-500'
-  },
-  {
-    name: 'Chemistry',
-    href: '/courses?subject=chemistry',
-    icon: FlaskConical,
-    competencyLevel: 45,
-    color: 'text-green-500'
-  },
-  {
-    name: 'English',
-    href: '/courses?subject=english',
-    icon: PenTool,
-    competencyLevel: 67,
-    color: 'text-orange-500'
-  }
-];
+// SUBJECTS array is now replaced by useCourses hook from API
+// Static data removed - use useCourses() hook to get real-time course data with competency levels

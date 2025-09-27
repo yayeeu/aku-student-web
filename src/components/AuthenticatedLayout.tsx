@@ -10,8 +10,9 @@ import { cn } from '@/lib/utils';
 import akuLogo from '@/assets/aku-education-logo.png';
 import studentAvatar from '@/assets/student-avatar.png';
 import { AppBreadcrumb } from '@/components/AppBreadcrumb';
-import { MAIN_NAVIGATION, PROGRESS_ITEMS, SUBJECTS } from '@/constants/navigation';
+import { MAIN_NAVIGATION, PROGRESS_ITEMS } from '@/constants/navigation';
 import { StudentData } from '@/types';
+import { useCourses } from '@/hooks/useCourses';
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode;
@@ -36,6 +37,9 @@ export const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({
   const [isSubjectsExpanded, setIsSubjectsExpanded] = useState(false);
   const [isProgressExpanded, setIsProgressExpanded] = useState(false);
   const location = useLocation();
+  
+  // Fetch courses from API
+  const { courses, isLoading: isCoursesLoading } = useCourses();
   
   const isCurrentPath = (path: string) => location.pathname === path;
 
@@ -62,20 +66,30 @@ export const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="ml-4 mt-1 space-y-1">
-              {SUBJECTS.map(subject => (
-                <Link 
-                  key={subject.name} 
-                  to={subject.href} 
-                  className="flex items-center justify-between px-4 py-2 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
-                  onClick={() => isMobile && setIsMobileMenuOpen(false)}
-                >
-                  <div className="flex items-center gap-2">
-                    <subject.icon className={cn("h-4 w-4", subject.color)} />
-                    <span>{subject.name}</span>
-                  </div>
-                  <span className="text-xs font-medium">{subject.competencyLevel}%</span>
-                </Link>
-              ))}
+              {isCoursesLoading ? (
+                <div className="px-4 py-2 text-sm text-sidebar-foreground/70">
+                  Loading courses...
+                </div>
+              ) : courses.length > 0 ? (
+                courses.map(course => (
+                  <Link 
+                    key={course.id} 
+                    to={course.href || `/courses?subject=${encodeURIComponent(course.name.toLowerCase())}`} 
+                    className="flex items-center justify-between px-4 py-2 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+                    onClick={() => isMobile && setIsMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {course.icon && <course.icon className={cn("h-4 w-4", course.color)} />}
+                      <span>{course.name}</span>
+                    </div>
+                    <span className="text-xs font-medium">{course.competency_percentage}%</span>
+                  </Link>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-sidebar-foreground/70">
+                  No courses available
+                </div>
+              )}
             </CollapsibleContent>
           </Collapsible>
         </div>

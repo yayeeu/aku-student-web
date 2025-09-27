@@ -129,9 +129,9 @@ export const FloatingTalkAvatar: React.FC<FloatingTalkAvatarProps> = ({
       setHasSpokenWelcome(true); // Mark as spoken to prevent repeats
       
       try {
-        const { audioBuf, meta } = await synthesizeHeadTTS("Hello! I'm Aku, your AI tutor. I'm here to help you with your studies!", {
+        const { audioBuf, meta } = await synthesizeHeadTTS("Hello Yared! I'm Aku, your tutor. I'm here to help you with your studies!", {
           language: "en-us",
-          speed: 1
+          speed: 0.9
         });
         const { ctx, src, t0 } = await playAudioBuffer(audioBuf);
         audioRef.current = { ctx, t0 };

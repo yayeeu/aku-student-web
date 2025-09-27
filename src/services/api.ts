@@ -48,6 +48,19 @@ interface StudentApiResponse {
   updated_at?: string;
 }
 
+interface CourseApiResponse {
+  id: string;
+  name: string;
+  description?: string;
+  grade_level: string;
+  subject_area?: string;
+  is_available: boolean;
+  course_competency_level_theta: number;
+  competency_percentage: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 class ApiService {
   private baseUrl: string;
 
@@ -155,7 +168,23 @@ class ApiService {
     return result;
   }
 
+  async getStudentCourses(userId: string): Promise<CourseApiResponse[]> {
+    const response = await fetch(`${this.baseUrl}/api/students/${userId}/courses`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to fetch student courses');
+    }
+
+    return result;
+  }
+
 }
 
 export const apiService = new ApiService();
-export type { SignupRequest, LoginRequest, AuthResponse, ApiError, StudentApiResponse };
+export type { SignupRequest, LoginRequest, AuthResponse, ApiError, StudentApiResponse, CourseApiResponse };

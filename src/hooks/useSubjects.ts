@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Subject } from '@/types';
-import { mockSubjects } from '@/data/mockData';
-import { createError } from '@/utils';
-import { ERROR_MESSAGES } from '@/constants';
+import { useMemo } from 'react';
+import { Subject, Course } from '@/types';
+import { useCourses } from './useCourses';
+import { BookOpen } from 'lucide-react';
 
 interface UseSubjectsReturn {
   subjects: Subject[];
@@ -12,45 +11,41 @@ interface UseSubjectsReturn {
   refetch: () => void;
 }
 
-export const useSubjects = (): UseSubjectsReturn => {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchSubjects = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const subjectList = Object.values(mockSubjects);
-      setSubjects(subjectList);
-    } catch (err) {
-      const error = createError(ERROR_MESSAGES.LOADING_ERROR);
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
+// Transform Course to Subject for backwards compatibility
+const transformCourseToSubject = (course: Course): Subject => {
+  return {
+    id: course.id,
+    title: course.name,
+    icon: course.icon || BookOpen,
+    grade: course.grade_level,
+    description: course.description || '',
+    masteryLevel: course.competency_percentage,
+    topicsCompleted: { current: 0, total: 0 }, // These would need to come from a separate API
+    totalTopics: 0,
+    completedTopics: 0,
+    overallMastery: course.competency_percentage,
+    color: course.color || 'text-gray-500',
+    bgGradient: undefined,
+    topics: undefined,
   };
+};
+
+export const useSubjects = (): UseSubjectsReturn => {
+  const { courses, isLoading, error, refetch } = useCourses();
+
+  // Transform courses to subjects
+  const subjects = useMemo(() => {
+    return courses.map(transformCourseToSubject);
+  }, [courses]);
 
   const getSubject = (id: string): Subject | undefined => {
     return subjects.find(subject => subject.id === id);
   };
 
-  const refetch = () => {
-    fetchSubjects();
-  };
-
-  useEffect(() => {
-    fetchSubjects();
-  }, []);
-
   return {
     subjects,
     isLoading,
-    error,
+    error: error?.message || null,
     getSubject,
     refetch
   };
