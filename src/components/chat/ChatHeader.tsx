@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CardTitle } from '@/components/ui/card';
-import { EyeOff, VolumeX } from 'lucide-react';
+import { Eye, EyeOff, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import teacherAvatar from '@/assets/teacher-avatar.png';
 
@@ -42,7 +42,11 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           className={cn("transition-colors", !isAvatarVisible && "bg-muted text-muted-foreground")} 
           title={isAvatarVisible ? "Hide Avatar" : "Show Avatar"}
         >
-          <EyeOff className="w-4 h-4" />
+          {isAvatarVisible ? (
+            <Eye className="w-4 h-4" />
+          ) : (
+            <EyeOff className="w-4 h-4" />
+          )}
         </Button>
         <Button 
           variant="ghost" 
@@ -51,7 +55,11 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           className={cn("transition-colors", isAvatarMuted && "bg-muted text-muted-foreground")} 
           title={isAvatarMuted ? "Unmute Avatar" : "Mute Avatar"}
         >
-          <VolumeX className="w-4 h-4" />
+          {isAvatarMuted ? (
+            <VolumeX className="w-4 h-4" />
+          ) : (
+            <Volume2 className="w-4 h-4" />
+          )}
         </Button>
       </div>
     </div>

@@ -35,7 +35,7 @@ const Index = () => {
     return storedSession ? 'authenticated' : 'login';
   });
   const [isTutorVisible, setIsTutorVisible] = useState(true);
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [currentUser, setCurrentUser] = useState<SessionData['user'] | null>(null);
 
   const handleLogin = (userData: SessionData['user']) => {

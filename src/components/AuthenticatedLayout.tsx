@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FloatingTutorAvatar } from '@/components/FloatingTutorAvatar';
+import { FloatingTalkAvatar } from '@/components/FloatingTalkAvatar';
 import { cn } from '@/lib/utils';
 import akuLogo from '@/assets/aku-education-logo.png';
 import studentAvatar from '@/assets/student-avatar.png';
@@ -28,7 +28,7 @@ export const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({
   onLogout,
   isTutorVisible = true,
   onToggleTutorVisibility = () => {},
-  isVoiceEnabled = false,
+  isVoiceEnabled = true,
   onToggleVoice = () => {},
   studentData
 }) => {
@@ -231,14 +231,11 @@ export const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({
         </div>
       </div>
 
-      {/* Floating Tutor Avatar */}
-      <FloatingTutorAvatar 
-        isVisible={isTutorVisible} 
-        onToggleVisibility={onToggleTutorVisibility} 
-        isVoiceEnabled={isVoiceEnabled} 
-        onToggleVoice={onToggleVoice} 
-        isResponding={false} 
-      />
+            {/* Floating Tutor Avatar */}
+            <FloatingTalkAvatar 
+              isVisible={isTutorVisible} 
+              isVoiceEnabled={isVoiceEnabled} 
+            />
 
       {/* Footer */}
       <footer className="bg-background border-t border-border py-3 mt-auto lg:ml-72">
